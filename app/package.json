@@ -1,0 +1,33 @@
+{
+  "name": "hexperiments",
+  "version": "0.0.1",
+  "description": "Hex Game",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc && electron-builder",
+    "start": "tsc && electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/rudymcintyre/hexperiments"
+  },
+  "keywords": [
+    "hex",
+    "ai",
+    "game"
+  ],
+  "author": "Rudy McIntyre",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/react": "^18.2.67",
+    "@types/react-dom": "^18.2.22",
+    "electron": "^29.1.5",
+    "electron-builder": "^24.13.3",
+    "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}
