@@ -11,7 +11,7 @@ self["webpackHotUpdatemy_new_app"]("main_window",{},
 /******/ function(__webpack_require__) { // webpackRuntimeModules
 /******/ /* webpack/runtime/getFullHash */
 /******/ (() => {
-/******/ 	__webpack_require__.h = () => ("b68b19ce91836b5f95df")
+/******/ 	__webpack_require__.h = () => ("78fa9f0531bf473645e6")
 /******/ })();
 /******/ 
 /******/ }
