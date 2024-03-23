@@ -1,28 +1,19 @@
 
 import ReactDOM from 'react-dom';
 import { BoardComponent } from './components/BoardComponent';
-import { CellValue, GameBoard } from './game/Board';
+import  GameBoard  from './game/Board';
+import CellValue from './game/Cell';
 import React from 'react';
+import { Game, INITIAL_PLAYER } from './game/Game';
 
 const App: React.FC = () => {
-    const [board] = React.useState(new GameBoard(11));
-    const [player, setPlayer] = React.useState<CellValue>('R');
-
-    const playMove = (row: number, col: number) => {
-        console.log(`Playing move at ${row}, ${col}`);
-        if (board.getCell(row, col) === '.') {
-            board.setCell(row, col, player);
-            setPlayer(player === 'R' ? 'B' : 'R');
-        }
-    };
+    const [game] = React.useState(new Game(11));
 
     return (
         <BoardComponent 
-            board={board}
+            game={game}
             width={window.innerWidth}
             height={window.innerHeight}
-            playMove={playMove}
-            player={player}
         />
     );
 };
