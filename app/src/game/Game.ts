@@ -54,7 +54,7 @@ export class Game {
         if (this.playRecord[this.currentPlayer].length < this.board.getSize())
             return false;
 
-        let visited: boolean[][] = Array.from({ length: this.board.getSize() }, () => Array(this.board.getSize()).fill(false));
+        let visited: boolean[][] = this.fill2DArray(this.board.getSize(), this.board.getSize(), false);
         
         // all nodes of current player
         for (let [row, col] of this.playRecord[this.currentPlayer]) {
@@ -65,8 +65,6 @@ export class Game {
             if (visited[row][col] || !(redStartEdge || blueStartEdge))
                 continue;
 
-            console.log("yahh")
-
             if (this.dfsOnNode(row, col, visited))
                 return true;
         }
@@ -76,27 +74,35 @@ export class Game {
 
     private dfsOnNode(row: number, col: number, visited: boolean[][]): boolean {
         visited[row][col] = true;
-        let stack: number[][] = [[row, col]];
-        while (stack.length > 0) {
-            let [r, c] = stack.pop()!;
+        let currentStack: number[][] = [[row, col]];
+
+        while (currentStack.length > 0) {
+            let [r, c] = currentStack.pop()!;
+
             let neighbours = this.board.getNeighbours(r, c);
             for (let [nr, nc] of neighbours) {
-                if (this.board.getCell(nr, nc) === this.currentPlayer) {
-                    let redEndEdge: boolean = this.currentPlayer === CellValue.RED
-                            && nc === this.board.getSize() - 1;
-                    let blueEndEdge: boolean = this.currentPlayer === CellValue.BLUE
-                            && nr === this.board.getSize() - 1;
+                if (this.board.getCell(nr, nc) !== this.currentPlayer)
+                    continue;
 
-                    if (redEndEdge || blueEndEdge)
-                        return true;
+                // check if winning node is found
+                let redEndEdge: boolean = this.currentPlayer === CellValue.RED
+                        && nc === this.board.getSize() - 1;
+                let blueEndEdge: boolean = this.currentPlayer === CellValue.BLUE
+                        && nr === this.board.getSize() - 1;
+                if (redEndEdge || blueEndEdge)
+                    return true;
 
-                    if (!visited[nr][nc]) {
-                        visited[nr][nc] = true;
-                        stack.push([nr, nc]);
-                    }
+                // continue dfs
+                if (!visited[nr][nc]) {
+                    visited[nr][nc] = true;
+                    currentStack.push([nr, nc]);
                 }
             }
         }
+    }
+
+    private fill2DArray<T>(rows: number, cols: number, value: T): T[][] {
+        return Array.from({ length: rows }, () => Array(cols).fill(value));
     }
 
     reset(): void {
