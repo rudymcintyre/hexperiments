@@ -22,8 +22,6 @@ export class Game {
         this.board = new GameBoard(size);
     }
 
-
-
     getBoard(): GameBoard {
         return this.board;
     }
@@ -53,6 +51,9 @@ export class Game {
     }
 
     checkWinner(): boolean {
+        if (this.playRecord[this.currentPlayer].length < this.board.getSize())
+            return false;
+
         let visited: boolean[][] = Array.from({ length: this.board.getSize() }, () => Array(this.board.getSize()).fill(false));
         
         // all nodes of current player
@@ -60,34 +61,42 @@ export class Game {
             // dfs on boundary nodes only
             let redStartEdge: boolean = this.currentPlayer === CellValue.RED && col === 0;
             let blueStartEdge: boolean = this.currentPlayer === CellValue.BLUE && row === 0;
-            if (redStartEdge || blueStartEdge)
+
+            if (visited[row][col] || !(redStartEdge || blueStartEdge))
                 continue;
 
-            visited[row][col] = true;
-            let stack: number[][] = [[row, col]];
-            while (stack.length > 0) {
-                let [r, c] = stack.pop()!;
-                let neighbours = this.board.getNeighbours(r, c);
-                for (let [nr, nc] of neighbours) {
-                    if (this.board.getCell(nr, nc) === this.currentPlayer) {
-                        let redEndEdge: boolean = this.currentPlayer === CellValue.RED
-                                && nc === this.board.getSize() - 1;
-                        let blueEndEdge: boolean = this.currentPlayer === CellValue.BLUE
-                                && nr === this.board.getSize() - 1;
+            console.log("yahh")
 
-                        if (redEndEdge || blueEndEdge)
-                            return true;
+            if (this.dfsOnNode(row, col, visited))
+                return true;
+        }
 
-                        if (!visited[nr][nc]) {
-                            visited[nr][nc] = true;
-                            stack.push([nr, nc]);
-                        }
+        return false;
+    }
+
+    private dfsOnNode(row: number, col: number, visited: boolean[][]): boolean {
+        visited[row][col] = true;
+        let stack: number[][] = [[row, col]];
+        while (stack.length > 0) {
+            let [r, c] = stack.pop()!;
+            let neighbours = this.board.getNeighbours(r, c);
+            for (let [nr, nc] of neighbours) {
+                if (this.board.getCell(nr, nc) === this.currentPlayer) {
+                    let redEndEdge: boolean = this.currentPlayer === CellValue.RED
+                            && nc === this.board.getSize() - 1;
+                    let blueEndEdge: boolean = this.currentPlayer === CellValue.BLUE
+                            && nr === this.board.getSize() - 1;
+
+                    if (redEndEdge || blueEndEdge)
+                        return true;
+
+                    if (!visited[nr][nc]) {
+                        visited[nr][nc] = true;
+                        stack.push([nr, nc]);
                     }
                 }
             }
         }
-
-        return false;
     }
 
     reset(): void {
