@@ -1,8 +1,8 @@
 enum MoveResult {
-    VALID,
-    INVALID,
-    BLUE_WIN,
-    RED_WIN,
+    VALID = '',
+    INVALID = 'INVALID MOVE!',
+    BLUE_WIN = 'BLUE WINS!',
+    RED_WIN = 'RED WINS!',
 }
 
 export default MoveResult;

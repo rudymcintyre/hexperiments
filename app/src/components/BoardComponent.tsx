@@ -2,12 +2,7 @@ import CellValue from '../game/Cell';
 import { Stage, Layer, Text, RegularPolygon } from 'react-konva';
 import { Game } from '../game/Game';
 import React from 'react';
-
-interface BoardComponentProps {
-    game: Game;
-    width: number;
-    height: number;
-};
+import MoveResult from '../game/MoveResult';
 
 type FillMap = {
     [key in CellValue]: string;
@@ -22,10 +17,16 @@ const cellRadius = 25;
 const drawOffset = cellRadius + 1;
 const cellWidth = cellRadius * 2;
 
+interface BoardComponentProps {
+    game: Game;
+    width: number;
+    height: number;
+};
 export const BoardComponent: React.FC<BoardComponentProps> = (props: BoardComponentProps) => {
     const { game, width, height } = props;
 
     const [player, setPlayer] = React.useState<CellValue>(game.getCurrentPlayer());
+    const [gameMoveState, setGameMoveState] = React.useState<MoveResult>(MoveResult.VALID);
 
     const renderCell = (row: number, col: number) => {
         const fill = fillMap[game.getBoard().getCell(row, col)];
@@ -42,7 +43,10 @@ export const BoardComponent: React.FC<BoardComponentProps> = (props: BoardCompon
                 stroke='black'
                 fill={fill}
                 onClick={() => {
-                    game.play(row, col);
+                    if (gameMoveState !== MoveResult.VALID) {
+                        game.reset();
+                    }
+                    setGameMoveState(game.play(row, col));
                     setPlayer(game.getCurrentPlayer());
                 }}
                 onMouseEnter={(e) => {
@@ -53,7 +57,7 @@ export const BoardComponent: React.FC<BoardComponentProps> = (props: BoardCompon
                 onMouseLeave={(e) => {
                     const cell = e.target;
                     cell.scaleX(1);
-                    cell.scaleY(1);
+                    cell.scaleY(1)
                 }}
             />
         );
@@ -70,7 +74,7 @@ export const BoardComponent: React.FC<BoardComponentProps> = (props: BoardCompon
         <Stage width={width} height={height}>
             <Layer>
                 {boardJSX}
-                <Text text={`Player: ${player}`} x={10} y={10} />
+                <Text text={gameMoveState} x={10} y={300} fontSize={24} />
             </Layer>
         </Stage>
     );
