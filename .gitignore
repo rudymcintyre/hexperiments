@@ -75,7 +75,7 @@ typings/
 # dotenv environment variables file
 .env
 
-
+.venv
 
 .travis/README.md
 .travis/scripts
