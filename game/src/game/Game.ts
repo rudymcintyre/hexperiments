@@ -1,6 +1,3 @@
-import GameBoard from "./Board";
-import CellValue from "./Cell";
-import MoveResult from "./MoveResult";
 
 type PlayRecord = {
     [key in CellValue]: number[][] | null;
