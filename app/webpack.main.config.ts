@@ -13,6 +13,10 @@ export const mainConfig: Configuration = {
   module: {
     rules,
   },
+  target: 'electron-renderer',
+  node: {
+    __dirname: false
+  },
   plugins,
   resolve: {
     extensions: ['.js', '.ts', '.jsx', '.tsx', '.css', '.json'],
