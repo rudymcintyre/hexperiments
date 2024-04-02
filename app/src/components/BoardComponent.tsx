@@ -2,6 +2,7 @@
 import { Stage, Layer, Text, RegularPolygon } from 'react-konva';
 import React from 'react';
 import { CellValue, GameState } from '../hextypes';
+import HexClient from '../socket/HexClient';
 
 type FillMap = {
     [key in CellValue]: string;
@@ -18,17 +19,16 @@ const cellWidth = cellRadius * 2;
 
 interface BoardComponentProps {
     game: GameState;
+    socket: HexClient
     width: number;
     height: number;
 };
 export const BoardComponent: React.FC<BoardComponentProps> = (props: BoardComponentProps) => {
-    const { game, width, height } = props;
+    const { game, socket, width, height } = props;
 
     if (!game) {
         return <div>Loading...</div>;
     }
-
-    const [player, setPlayer] = React.useState<CellValue>(game?.current_player);
 
     const renderCell = (row: number, col: number) => {
         const fill = fillMap[game.board[row][col]];
@@ -45,7 +45,7 @@ export const BoardComponent: React.FC<BoardComponentProps> = (props: BoardCompon
                 stroke='black'
                 fill={fill}
                 onClick={() => {
-                    console.log(`Clicked on cell ${row}, ${col}`);
+                    socket.send_request(JSON.stringify({row, col}));
                 }}
                 onMouseEnter={(e) => {
                     const cell = e.target;

@@ -24,7 +24,7 @@ const App: React.FC = () => {
 
     return (
         <div>
-            {<BoardComponent game={game} width={window.innerWidth} height={window.innerHeight}/>}
+            {<BoardComponent game={game} socket={socket} width={window.innerWidth} height={window.innerHeight}/>}
         </div>
     );
 };

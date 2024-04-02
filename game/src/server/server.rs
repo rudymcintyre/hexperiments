@@ -1,7 +1,4 @@
-use std::thread;
-use std::time::Duration;
-
-use zmq::{Context, Socket, SocketType::PUB, REP};
+use zmq::{Context, Socket, SocketType::{PUB, REP}};
 
 pub struct HexServer {
     pub_socket: Socket,
@@ -45,18 +42,6 @@ impl HexServer {
 
     pub fn publish_data(&self, message: &str) {
         self.pub_socket.send(message, 0).unwrap();
-    }
-
-    pub fn run(&self) {
-        loop {
-            println!("Waiting for message...");
-            let message = self.receive_request();
-            println!("Received: {}", message);
-            self.send_reply("world:message received!");
-
-            self.publish_data("a");
-            println!("Published: a");
-        }
     }
 }
 
