@@ -4,7 +4,7 @@ use crate::game::move_result::MoveResult;
 
 use std::collections::HashMap;
 
-struct Game {
+pub struct Game {
     board: Board,
     current_player: CellValue,
     play_record: HashMap<CellValue, Vec<(usize, usize)>>,
@@ -13,7 +13,7 @@ struct Game {
 impl Game {
     const INITIAL_PLAYER: CellValue = CellValue::Red;
 
-    fn new(size: usize) -> Game {
+    pub fn new(size: usize) -> Game {
         let board = Board::new(size);
         let current_player = Game::INITIAL_PLAYER;
         let mut play_record = HashMap::new();
@@ -24,15 +24,15 @@ impl Game {
         Game { board, current_player, play_record }
     }
 
-    fn get_board(&self) -> &Board {
+    pub fn get_board(&self) -> &Board {
         &self.board
     }
 
-    fn get_current_player(&self) -> CellValue {
+    pub fn get_current_player(&self) -> CellValue {
         self.current_player
     }
 
-    fn play(&mut self, row: usize, col: usize) -> MoveResult {
+    pub fn play(&mut self, row: usize, col: usize) -> MoveResult {
         let cell: CellValue = self.board.get_cell(row, col);
 
         if cell != CellValue::Empty {

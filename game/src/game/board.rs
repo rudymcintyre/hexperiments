@@ -1,5 +1,8 @@
+
+
 use crate::game::cell::CellValue;
 
+#[derive(Clone, PartialEq)]
 pub struct Board {
     board: Vec<Vec<CellValue>>,
     size: usize,

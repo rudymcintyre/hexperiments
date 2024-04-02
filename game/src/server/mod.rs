@@ -1,1 +1,1 @@
-pub mod servera;
+pub mod server;

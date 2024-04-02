@@ -1,51 +1,32 @@
 
-import ReactDOM from 'react-dom';
-// import { BoardComponent } from './components/BoardComponent';
 import React, { useEffect } from 'react';
 import { createRoot } from 'react-dom/client'
-import * as zmq from 'zeromq';
-
-
+import HexClient from './socket/HexClient';
+import { BoardComponent } from './components/BoardComponent';
+import { GameState } from './hextypes';
 
 const App: React.FC = () => {
-    //const [game, setGame] = React.useState<>(new Game(11));
-    const [socket, setSocket] = React.useState<zmq.Socket>(null);
+    const [socket] = React.useState<HexClient>(new HexClient());
+    const [game, setGame] = React.useState<GameState>(null);
 
-    // async function send() {
-    //     console.log(socket)
-    //     if (socket) {
-    //         await socket.send("hellowww")
-    //         console.log("sent!")
-    //     } else {
-    //         console.log("socket not connected")
-    //     }
-    // }
+    const sub_callback = async (message: string) => {
+        const gameState: GameState = JSON.parse(message.toString()) as GameState;
+        setGame(gameState);
+    }
 
-    // const recieve = async (message: any) => {
-    //     console.log(message);
-    // }
+    const req_callback = async (topic: string, message: string) => {
+        console.log("reply:", Buffer.from(topic).toString());
+    }
 
     useEffect(() => {
-        async function connect() {
-            const newSocket = zmq.socket("sub");
-            newSocket.connect("tcp://127.0.0.1:5556");
-            newSocket.subscribe("");
-            newSocket.on("message", function(topic, message) {
-                console.log(Buffer.from(topic).toString());
-            }
-            );
-        }  
-        connect();
+        socket.connect(sub_callback, req_callback);
     }, []);
 
-
     return (
-        <h1>asdasdas</h1>
+        <div>
+            {<BoardComponent game={game} width={window.innerWidth} height={window.innerHeight}/>}
+        </div>
     );
 };
-const root = createRoot(document.getElementById('root'));
-root.render(
-    <React.StrictMode>
-        <App/>
-    </React.StrictMode>
-);
+
+createRoot(document.getElementById('root')).render(<App/>);
