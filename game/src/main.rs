@@ -35,8 +35,6 @@ fn main() {
         let message: String = serde_json::to_string(&state).unwrap();
         
         server.publish_data(message.as_str());
-
-
         println!("Waiting for move...");
 
         let move_result: MoveResult = serde_json::from_str(server.receive_request().as_str()).unwrap();

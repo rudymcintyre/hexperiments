@@ -8,17 +8,23 @@ from pathlib import Path
 import zmq
 import click
 
-from player.lib.base import BaseAgent
+from player.base.base import BaseAgent
 
 DEFAULT_PORT = 5555
 LOCALHOST = '127.0.0.1'
-        
+
+def _get_agents() -> list:
+    """
+    Get the list of agents available
+    """
+    return [dir.name for dir in (Path(__file__).parent / 'agents').glob('*')]
+
 
 def _check_agent_exists(agent: str) -> bool:
     """
     Check if the agent exists in the agents directory
     """
-    dirs = [dir.name for dir in (Path(__file__).parent / 'agents').glob('*')]
+    dirs = _get_agents()
 
     if agent not in dirs:
         raise FileNotFoundError(f"Agent `{agent}` not found. Available agents are:{'\n - '.join(['', *dirs])}")
@@ -61,6 +67,18 @@ async def _init_game(socket: zmq.Socket) -> str:
     await socket.send_json({'action': 'init'})
     result = await socket.recv_json()
     return result['colour']
+
+@click.command("agents")
+@click.option('--quiet', is_flag=True)
+def list_agents(quiet: bool) -> None:
+    """
+    List the available agents
+    """
+    agents = _get_agents()
+    if not quiet:
+        click.echo(f"Available agents are:{'\n - '.join(['', *agents])}")
+    else:
+        click.echo(','.join(agents))
 
 
 @click.command()
