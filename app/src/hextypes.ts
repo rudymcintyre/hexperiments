@@ -18,6 +18,6 @@ export enum ReplyType {
 }
 
 export interface Message {
-    type: ReplyType;
-    message: [] | null;
+    m_type: ReplyType;
+    data: [] | null;
 }

@@ -19,16 +19,16 @@ const App: React.FC = () => {
     const req_callback = async (message: string) => {
         const parsedMessage: Message = JSON.parse(message.toString()) as Message;
 
-        if (parsedMessage.type === 'Players') {
-            console.log(parsedMessage.message);
-            setPlayerList(parsedMessage.message);
+        if (parsedMessage.m_type === 'Players') {
+            console.log(parsedMessage.data);
+            setPlayerList(parsedMessage.data);
         }
     }
 
     useEffect(() => {
         socket.connect(sub_callback, req_callback);
 
-        socket.send_request(JSON.stringify({type: 'Players'});
+        socket.send_request(JSON.stringify({m_type: 'Players', data: []}));
     }, []);
 
     return (

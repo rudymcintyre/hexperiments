@@ -23,7 +23,7 @@ struct MoveResult {
     col: usize,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 struct Message {
     m_type: String,
     data: Vec<String>,
@@ -38,7 +38,7 @@ fn main() {
 
     println!("{}", env::current_dir().unwrap().to_str().unwrap());
 
-    //let front_end_connected: Message = serde_json::from_str(server.receive_request().as_str()).unwrap();
+    let front_end_connected: Message = serde_json::from_str(server.receive_request().as_str()).unwrap();
     let agents: Output = Command::new("python3")
         .current_dir("./../player/")
         .arg("main.py")
@@ -49,6 +49,14 @@ fn main() {
     let agents: String = String::from_utf8(agents.stdout).unwrap();
     let agents: Vec<&str> = agents.trim().split(",").collect();
     println!("Agents: {:?}", agents);
+
+    if front_end_connected.m_type == "Players" {
+        let message: Message = Message {
+            m_type: "Players".to_string(),
+            data: agents.iter().map(|x| x.to_string()).collect(),
+        };
+        server.send_reply(serde_json::to_string(&message).unwrap().as_str());
+    }
 
     loop {
         // publish state
