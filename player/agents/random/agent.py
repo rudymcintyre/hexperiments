@@ -1,7 +1,6 @@
 import random
 
-from player.lib.base import BaseAgent
-
+from player.base_agent import BaseAgent
 
 class Agent(BaseAgent):
     """

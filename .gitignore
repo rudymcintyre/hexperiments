@@ -3,6 +3,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+__pycache__/
+
 # No mac stuff
 .DS_Store
 
