@@ -26,7 +26,8 @@ class HexClient {
         this.reqSocket.on("message", req_callback);
     }
 
-    async send_request(message: string) {
+    async send_request(messageType: string, data: string[] | number[] | null) {
+        const message = JSON.stringify({m_type: messageType, data: data});
         console.log("sending request");
         await this.reqSocket.send(message);
     }

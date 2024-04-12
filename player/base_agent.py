@@ -1,19 +1,21 @@
-from typing import Literal
+from typing import Tuple
 
 
 class BaseAgent():
     """
     Base class for agent
     """
+    board_state = None
 
-    colour: Literal['RED', 'BLUE']
-
-    def set_colour(self, colour: Literal['RED', 'BLUE']) -> None:
+    def update_game_state(self, game_state: list[list[int]]):
         """
-        Set the colour of the agent
+        Setter for game state
         """
-        self.colour = colour
+        self.board_state = game_state
 
-    def get_move(self, *args, **kwargs):
+    def get_move(self, *args, **kwargs) -> Tuple[int, int]:
+        """
+        Abstract function to be overridden by each type of child class
+        """
         raise NotImplementedError()
     

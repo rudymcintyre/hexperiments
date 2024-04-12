@@ -4,6 +4,11 @@ export enum CellValue {
     EMPTY = 'Empty',
 }
 
+export enum AppState {
+    READY,
+    PLAYING,
+}
+
 export interface GameState {
     board: CellValue[][];
     current_player: CellValue;

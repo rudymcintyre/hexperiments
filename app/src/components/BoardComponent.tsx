@@ -45,7 +45,7 @@ export const BoardComponent: React.FC<BoardComponentProps> = (props: BoardCompon
                 stroke='black'
                 fill={fill}
                 onClick={() => {
-                    socket.send_request(JSON.stringify({row, col}));
+                    socket.send_request("Move", [row, col]);
                 }}
                 onMouseEnter={(e) => {
                     const cell = e.target;

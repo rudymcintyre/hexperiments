@@ -10,21 +10,28 @@ interface SetupComponentProps {
 
 export const SetupComponent: React.FC<SetupComponentProps> = (props: SetupComponentProps) => {
     const { players, startCallback } = props;
+    const [player1, setPlayer1] = React.useState<string>('');
+    const [player2, setPlayer2] = React.useState<string>('');
 
     return (
         <div>
             <h1>Setup</h1>
             <div>
-                <h2>Players</h2>
-                <ul>
-                    {players.map((player, i) => (
-                        <li key={i}>{player}</li>
-                    ))}
-                </ul>
-            </div>
-            <div>
-                <h2>Start Game</h2>
-                <button onClick={() => startCallback(players[0], players[1])}>Start</button>
+                <form>
+                    <h2>Player 1</h2>
+                        <select id="player1" onChange={(e) => setPlayer1(e.target.value)} >
+                        {players.map((player, i) => {
+                            return <option key={i}>{player}</option>
+                        })}
+                    </select>
+                    <h2>Player 2</h2>
+                    <select id="player2" onChange={(e) => setPlayer2(e.target.value)} >
+                        {players.map((player, i) => {
+                            return <option key={i}>{player}</option>
+                        })}
+                    </select>
+                    <button type='submit' onClick={(e) => startCallback(player1, player2)}>Start Game</button>
+                </form>
             </div>
         </div>
     )

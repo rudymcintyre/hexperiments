@@ -1,4 +1,5 @@
 use std::env;
+use std::fmt::Display;
 use std::{thread, time::Duration};
 
 use crate::game::{game::Game, move_result};
@@ -19,8 +20,8 @@ struct GameMessage {
 
 #[derive(Deserialize)]
 struct MoveResult {
-    row: usize,
-    col: usize,
+    m_type: String,
+    data: Vec<usize>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -47,7 +48,8 @@ fn main() {
         .output()
         .unwrap();
     let agents: String = String::from_utf8(agents.stdout).unwrap();
-    let agents: Vec<&str> = agents.trim().split(",").collect();
+    let mut agents: Vec<&str> = agents.trim().split(",").collect();
+    agents.push("human");
     println!("Agents: {:?}", agents);
 
     if front_end_connected.m_type == "Players" {
@@ -57,6 +59,10 @@ fn main() {
         };
         server.send_reply(serde_json::to_string(&message).unwrap().as_str());
     }
+
+    let reply: Message = serde_json::from_str(server.receive_request().as_str()).unwrap();
+    println!("{}", reply.m_type);
+    server.send_reply("Ready");
 
     loop {
         // publish state
@@ -71,8 +77,8 @@ fn main() {
 
         // game moves
         let move_result: MoveResult = serde_json::from_str(server.receive_request().as_str()).unwrap();
-        println!("Received move: row: {}, col: {}", move_result.row, move_result.col);
-        let result = game.play(move_result.row, move_result.col);
+        println!("Received move: row: {}, col: {}", move_result.data[0], move_result.data[1]);
+        let result = game.play(move_result.data[0], move_result.data[1]);
 
         match result {
             move_result::MoveResult::Valid => {
