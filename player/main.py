@@ -74,6 +74,8 @@ async def _play(
         await req_socket.send_json({'m_type': 'Move', 'data': [row, col]})
         result = await req_socket.recv_json()
 
+        move_ready.clear()
+
         
 
 
