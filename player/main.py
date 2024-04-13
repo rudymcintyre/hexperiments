@@ -135,8 +135,6 @@ async def _async_start(req_socket, sub_socket, agent, colour: Literal['RED', 'BL
         _sub_listen(sub_socket, partial(_parse_and_set_state, agent), move_ready, game_over, colour),
     )
 
-    print('Game over')
-
 
 @cli.command()
 @click.argument("agent", required=True)
