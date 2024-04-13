@@ -74,15 +74,14 @@ async def _play(
 
     while True:
         await move_ready.wait()
+        if game_over.is_set():
+            break
 
         (row, col) = agent.get_move()
         await req_socket.send_json({'m_type': 'Move', 'data': [row, col]})
         #TODO make the backend send json not string
         result = await req_socket.recv()
         print(str(result))
-        if result == b'BlueWin' or result == b'RedWin':
-            game_over.set()
-            break
 
         move_ready.clear()
 
@@ -100,7 +99,9 @@ async def _sub_listen(sub_socket: zmq.Socket, callback: callable, move_ready: as
             print(f'{colour} player turn')
             move_ready.set()
 
-        if game_over.is_set():
+        if message['current_player'] == 'Empty':
+            move_ready.set()
+            game_over.set()
             break
 
 

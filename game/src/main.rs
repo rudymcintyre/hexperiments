@@ -125,16 +125,15 @@ fn main() {
                 break;
             }
         }
-        thread::sleep(Duration::from_millis(150));
     }
 
     let state: GameMessage = GameMessage {
         board: game.get_board().get_board().clone(),
-        current_player: game.get_current_player(),
+        current_player: CellValue::Empty,
     };
     let message: String = serde_json::to_string(&state).unwrap();
     server.publish_data(message.as_str());
 
-    thread::sleep(Duration::from_millis(150));
+    thread::sleep(Duration::from_millis(100));
 
 }
