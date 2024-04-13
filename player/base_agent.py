@@ -8,31 +8,32 @@ class BaseAgent():
     """
     board_state = None
     colour = None
+    board_size = 11
 
-    def __init__(self, colour: str):
-        self.board_state = [['Empty' for _ in range(11)] for _ in range(11)]
+    def init_board(self, colour: str):
+        self.board_state = [['Empty' for _ in range(self.board_size)] for _ in range(self.board_size)]
         self.colour = colour
 
-    def win_condition(self) -> bool:
+    def win_condition(self, current_board, player) -> bool:
         """
         Check if the player has won
         """
-        visited = [[False for _ in range(11)] for _ in range(11)]
+        visited = [[False for _ in range(self.board_size)] for _ in range(self.board_size)]
 
-        if self.colour == 'RED':
-            for i in range(11):
-                if self.board_state[i][0] == 'Red' and not visited[i][0]:
-                    if self.dfs(0, i, visited):
+        if player == 'Red':
+            for i in range(self.board_size):
+                if current_board[i][0] == 'Red' and not visited[i][0]:
+                    if self.dfs(0, i, current_board, player, visited):
                         return True
         else:
-            for i in range(11):
-                if self.board_state[0][i] == 'Blue' and not visited[0][i]:
-                    if self.dfs(i, 0, visited):
+            for i in range(self.board_size):
+                if current_board[0][i] == 'Blue' and not visited[0][i]:
+                    if self.dfs(i, 0, current_board, player, visited):
                         return True
 
         return False
     
-    def dfs(self, row: int, col: int, visited: list[list[bool]]) -> bool:
+    def dfs(self, row: int, col: int, current_board, colour, visited: list[list[bool]]) -> bool:
         """
         Depth first search to find if the player has won
         """
@@ -44,10 +45,10 @@ class BaseAgent():
             (r, c) = stack.pop()
 
             for (nr, nc) in self.get_neighbours(r, c):
-                if (self.board_state[nr][nc] != self.colour):
+                if (current_board[nr][nc] != colour):
                     continue
 
-                if self.colour == 'RED' and c == 10 or self.colour == 'BLUE' and r == 10:
+                if colour == 'Red' and c == self.board_size - 1 or colour == 'Blue' and r == self.board_size - 1:
                     return True
 
                 if not visited[nr][nc]:
@@ -61,10 +62,17 @@ class BaseAgent():
         neighbours = []
 
         for (dx, dy) in dirs:
-            if 0 <= row + dx < 11 and 0 <= col + dy < 11:
+            if 0 <= row + dx < self.board_size and 0 <= col + dy < self.board_size:
                 neighbours.append((row + dx, col + dy))
         
         return neighbours
+
+
+    def get_opponent(self, colour) -> str:
+        """
+        Get the opponent colour
+        """
+        return 'Red' if colour == 'Blue' else 'Blue'
 
 
     def update_game_state(self, game_state: list[list[str]]):

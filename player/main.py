@@ -55,7 +55,7 @@ def _import_agent(agent: str) -> BaseAgent:
     Import the agent
     """
     agent_module = __import__(f'agents.{agent}.agent', fromlist=[''])
-    return agent_module.Agent()
+    return agent_module.Agent
 
 
 async def _play(
@@ -118,7 +118,7 @@ def agents(quiet: bool) -> None:
         click.echo(','.join(agent_list))
 
 
-async def _async_start(req_socket, sub_socket, agent, colour: Literal['RED', 'BLUE']):
+async def _async_start(req_socket, sub_socket, agent, colour: Literal['Red', 'Blue']):
     """
     asyncio entry point
     """
@@ -141,13 +141,13 @@ async def _async_start(req_socket, sub_socket, agent, colour: Literal['RED', 'BL
 @click.argument("colour", required=True)
 @click.option('--host', default=LOCALHOST)
 @click.option('--port', default=DEFAULT_PORT, type=int)
-def start_agent(agent: str, colour: Literal['RED', 'BLUE'], host: str, port: int) -> None:
+def start_agent(agent: str, colour: Literal['Red', 'Blue'], host: str, port: int) -> None:
     """
     Main function to interact with the playing agent
     """
     _check_agent_exists(agent)
     req_socket, sub_socket = _setup_zmq(host, port)
-    agent = _import_agent(agent)
+    agent = _import_agent(agent)(colour)
 
     asyncio.run(
         _async_start(req_socket, sub_socket, agent, colour)
