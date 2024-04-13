@@ -4,9 +4,7 @@
 
 import asyncio
 from functools import partial
-import json
 from pathlib import Path
-import sys
 from typing import Literal, Tuple
 
 import zmq
@@ -70,18 +68,15 @@ async def _play(
     Play the game
     """
 
-    print(f'{agent} starting game')
-
     while True:
         await move_ready.wait()
+
         if game_over.is_set():
             break
 
         (row, col) = agent.get_move()
         await req_socket.send_json({'message_type': 'MoveRequest', 'payload': [row, col]})
-        #TODO make the backend send json not string
-        result = await req_socket.recv()
-        print(str(result))
+        await req_socket.recv()
 
         move_ready.clear()
 
@@ -95,14 +90,13 @@ async def _sub_listen(sub_socket: zmq.Socket, callback: callable, move_ready: as
         message = await sub_socket.recv_json()
         callback(message)
 
-        if message['current_player'].lower() == colour.lower():
-            print(f'{colour} player turn')
-            move_ready.set()
-
         if message['current_player'] == 'Empty':
             move_ready.set()
             game_over.set()
             break
+
+        if message['current_player'].lower() == colour.lower():
+            move_ready.set()
 
 
 @click.group()
@@ -123,9 +117,11 @@ def agents(quiet: bool) -> None:
     else:
         click.echo(','.join(agent_list))
 
-async def _async_start(req_socket, sub_socket, agent, colour: Literal['RED', 'BLUE']):
 
-    print(f'Starting game {colour}')
+async def _async_start(req_socket, sub_socket, agent, colour: Literal['RED', 'BLUE']):
+    """
+    asyncio entry point
+    """
 
     # handshake
     await req_socket.send_json({'message_type': 'Start', 'payload': colour})
