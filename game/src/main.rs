@@ -1,5 +1,5 @@
 use std::env;
-use std::fmt::Display;
+use std::sync::{Arc, Mutex};
 use std::{thread, time::Duration};
 
 use crate::game::{game::Game, move_result};
@@ -8,6 +8,8 @@ use crate::game::cell::CellValue;
 use serde::{Serialize, Deserialize};
 
 use std::process::{Command, Output};
+use tokio::process::Command as AsyncCommand;
+use tokio::runtime::Runtime;
 
 mod game;
 mod server;
@@ -35,7 +37,6 @@ fn main() {
     let server = server::server::HexServer::new();
     server.bind(None, None);
     let mut game = Game::new(11);
-    thread::sleep(Duration::from_millis(50));
 
     println!("{}", env::current_dir().unwrap().to_str().unwrap());
 
@@ -61,8 +62,36 @@ fn main() {
     }
 
     let reply: Message = serde_json::from_str(server.receive_request().as_str()).unwrap();
-    println!("{}", reply.m_type);
+    println!("{} {} {}", reply.m_type, reply.data[0], reply.data[1]);
     server.send_reply("Ready");
+
+    let runtime = Runtime::new().unwrap();
+    runtime.spawn(async move {
+        if reply.data[0] != "human" {
+            let _ = AsyncCommand::new("python3")
+                .current_dir("./../player/")
+                .stdout(std::process::Stdio::inherit())
+                .arg("main.py")
+                .arg("start-agent")
+                .arg(&(reply.data[0]))
+                .arg("RED")
+                .spawn()
+                .unwrap();
+        }
+        if reply.data[1] != "human" {
+            let _ = AsyncCommand::new("python3")
+                .current_dir("./../player/")
+                .stdout(std::process::Stdio::inherit())
+                .arg("main.py")
+                .arg("start-agent")
+                .arg(&(reply.data[1]))
+                .arg("BLUE")
+                .spawn().unwrap();
+        }
+    });
+
+    // cheeky sleep to allow agents to start (REPLACE WITH PROPER SYNCHRONISATION)
+    thread::sleep(Duration::from_millis(150));
 
     loop {
         // publish state
@@ -96,5 +125,16 @@ fn main() {
                 break;
             }
         }
+        thread::sleep(Duration::from_millis(150));
     }
+
+    let state: GameMessage = GameMessage {
+        board: game.get_board().get_board().clone(),
+        current_player: game.get_current_player(),
+    };
+    let message: String = serde_json::to_string(&state).unwrap();
+    server.publish_data(message.as_str());
+
+    thread::sleep(Duration::from_millis(150));
+
 }

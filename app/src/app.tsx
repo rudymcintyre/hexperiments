@@ -39,10 +39,11 @@ const App: React.FC = () => {
     if (state == AppState.READY) {
     return (
         <div>
-             <SetupComponent players={playerList} startCallback={(player1, player2) => {
-                 socket.send_request('Start', [player1, player2]);
-                 setState(AppState.PLAYING)
-             }}/>
+            <SetupComponent players={playerList} startCallback={(player1: string, player2: string) => {
+                console.log(player1, player2);
+                socket.send_request('Start', [player1, player2]);
+                setState(AppState.PLAYING)
+            }}/>
         </div>
     );
     } else if (state == AppState.PLAYING) {

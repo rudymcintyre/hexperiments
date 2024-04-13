@@ -6,12 +6,15 @@ import asyncio
 from functools import partial
 import json
 from pathlib import Path
+import sys
 from typing import Literal, Tuple
 
 import zmq
+import zmq.asyncio
 import click
 
-from .base_agent import BaseAgent
+# linter is lying
+from base_agent import BaseAgent
 
 DEFAULT_PORT = 5555
 LOCALHOST = '127.0.0.1'
@@ -38,7 +41,7 @@ def _setup_zmq(host_ip: str, port: int) -> Tuple[zmq.Socket, zmq.Socket]:
     """
     Setup zmq connection
     """
-    context = zmq.Context()
+    context = zmq.asyncio.Context()
     req_socket = context.socket(zmq.REQ)
     sub_socket = context.socket(zmq.SUB)
     req_socket.connect(f'tcp://{host_ip}:{port}')
@@ -59,6 +62,7 @@ def _import_agent(agent: str) -> BaseAgent:
 
 async def _play(
         move_ready: asyncio.Event,
+        game_over: asyncio.Event,
         req_socket: zmq.Socket,
         agent: BaseAgent,
     ) -> None:
@@ -66,30 +70,38 @@ async def _play(
     Play the game
     """
 
+    print(f'{agent} starting game')
 
     while True:
-        await move_ready
+        await move_ready.wait()
 
         (row, col) = agent.get_move()
         await req_socket.send_json({'m_type': 'Move', 'data': [row, col]})
-        result = await req_socket.recv_json()
+        #TODO make the backend send json not string
+        result = await req_socket.recv()
+        print(str(result))
+        if result == b'BlueWin' or result == b'RedWin':
+            game_over.set()
+            break
 
         move_ready.clear()
 
-        
 
-
-async def _sub_listen(sub_socket: zmq.Socket, callback: callable, move_ready: asyncio.Event, colour: str) -> None:
+async def _sub_listen(sub_socket: zmq.Socket, callback: callable, move_ready: asyncio.Event, game_over, colour: str) -> None:
     """
     Listen on the subscribe socket and call back to function passed as argument if
     message is recieved
     """
     while True:
         message = await sub_socket.recv_json()
-        parsed = callback(message)['current_player']
+        callback(message)
 
-        if parsed == colour:
+        if message['current_player'].lower() == colour.lower():
+            print(f'{colour} player turn')
             move_ready.set()
+
+        if game_over.is_set():
+            break
 
 
 @click.group()
@@ -110,6 +122,19 @@ def agents(quiet: bool) -> None:
     else:
         click.echo(','.join(agent_list))
 
+async def _async_start(req_socket, sub_socket, agent, colour: Literal['RED', 'BLUE']):
+
+    print(f'Starting game {colour}')
+    move_ready = asyncio.Event()
+    game_over = asyncio.Event()
+
+    await asyncio.gather(
+        _play(move_ready, game_over, req_socket, agent),
+        _sub_listen(sub_socket, partial(_parse_and_set_state, agent), move_ready, game_over, colour),
+    )
+
+    print('Game over')
+
 
 @cli.command()
 @click.argument("agent", required=True)
@@ -124,22 +149,14 @@ def start_agent(agent: str, colour: Literal['RED', 'BLUE'], host: str, port: int
     req_socket, sub_socket = _setup_zmq(host, port)
     agent = _import_agent(agent)
 
-    move_ready = asyncio.Event
-
     asyncio.run(
-        asyncio.gather(
-            [
-                _play(move_ready, req_socket, agent),
-                _sub_listen(sub_socket, partial(_parse_and_set_state, agent), move_ready, colour),
-            ]
-        )
+        _async_start(req_socket, sub_socket, agent, colour)
     )
 
-def _parse_and_set_state(agent: BaseAgent, json_message: str):
-    message = json.loads(json_message)
+
+def _parse_and_set_state(agent: BaseAgent, json_obj: dict):
     try:
-        agent.set_game_state(message['board'])
-        return message
+        agent.update_game_state(json_obj['board'])
     except KeyError as exc:
         raise KeyError('Recieved invalid publish message') from exc
 
