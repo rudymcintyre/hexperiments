@@ -1,35 +1,34 @@
 use zmq::{Context, Socket, SocketType::{PUB, REP}};
 
-pub struct HexServer {
+pub struct SocketManager {
     pub_socket: Socket,
     rep_socket: Socket,
 }
 
-impl HexServer {
+impl SocketManager {
     const DEFAULT_HOST: &str = "127.0.0.1";
     const DEFAULT_PORT: i32 = 5555;
 
-    pub fn new() -> HexServer {
+    pub fn new() -> SocketManager {
         let context: Context = Context::new();
 
         let pub_socket: Socket = context.socket(PUB).unwrap();
         let rep_socket: Socket = context.socket(REP).unwrap();
-        HexServer { pub_socket, rep_socket }
+        SocketManager { pub_socket, rep_socket }
     }
 
     pub fn bind(&self, host: Option<&str>, port: Option<i32>) {
-        let address = format!(
-            "tcp://{}:{}",
-            host.unwrap_or(HexServer::DEFAULT_HOST),
-            port.unwrap_or(HexServer::DEFAULT_PORT),
-        );
-        let address_2 = format!(
-            "tcp://{}:{}",
-            host.unwrap_or(HexServer::DEFAULT_HOST),
-            port.unwrap_or(HexServer::DEFAULT_PORT + 1),
-        );
-        self.rep_socket.bind(&address).unwrap();
-        self.pub_socket.bind(&address_2).unwrap();
+        let rep_address = SocketManager::port_format(host, port);
+        let pub_address = SocketManager::port_format(host, 
+            Some(port.unwrap_or(SocketManager::DEFAULT_PORT) + 1));
+
+        self.rep_socket.bind(&rep_address).unwrap();
+        self.pub_socket.bind(&pub_address).unwrap();
+    }
+
+    fn port_format(host: Option<&str>, port: Option<i32>) -> String {
+        format!("tcp://{}:{}", host.unwrap_or(SocketManager::DEFAULT_HOST),
+            port.unwrap_or(SocketManager::DEFAULT_PORT))
     }
 
     pub fn receive_request(&self) -> String {

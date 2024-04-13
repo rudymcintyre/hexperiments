@@ -1,139 +1,86 @@
-use std::env;
-use std::sync::{Arc, Mutex};
-use std::{thread, time::Duration};
-
 use crate::game::{game::Game, move_result};
-use crate::game::cell::CellValue;
+use crate::server::{message_handler, subprocess_manager};
 
-use serde::{Serialize, Deserialize};
-
-use std::process::{Command, Output};
-use tokio::process::Command as AsyncCommand;
 use tokio::runtime::Runtime;
 
 mod game;
 mod server;
 
-#[derive(Serialize)]
-struct GameMessage {
-    board: Vec<Vec<CellValue>>,
-    current_player: CellValue,
-}
-
-#[derive(Deserialize)]
-struct MoveResult {
-    m_type: String,
-    data: Vec<usize>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct Message {
-    m_type: String,
-    data: Vec<String>,
-}
 
 fn main() {
-    println!("Hello, world!");
-    let server = server::server::HexServer::new();
+    let server = server::socket_manager::SocketManager::new();
     server.bind(None, None);
+
+    let message_handler = message_handler::MessageHandler::new(&server);
+
     let mut game = Game::new(11);
 
-    println!("{}", env::current_dir().unwrap().to_str().unwrap());
+    // get agents and send to frontend
+    let agents = subprocess_manager::get_agents();
+    message_handler.await_message(message_handler::MessageType::PlayerRequest);
+    println!("Received player request");
+    message_handler.send_message(
+        message_handler::MessageType::PlayerReply,
+        message_handler::Payload::PlayerReply(agents.iter().map(|x| x.to_string()).collect()),
+    );
+ 
+    let selected_agents: Vec<String> = message_handler
+        .await_message(message_handler::MessageType::PlayerReply)
+        .into_player_request();
+    
+    message_handler.send_message(message_handler::MessageType::MoveReply,
+        message_handler::Payload::MoveReply(move_result::MoveResult::Valid));
 
-    let front_end_connected: Message = serde_json::from_str(server.receive_request().as_str()).unwrap();
-    let agents: Output = Command::new("python3")
-        .current_dir("./../player/")
-        .arg("main.py")
-        .arg("agents")
-        .arg("--quiet")
-        .output()
-        .unwrap();
-    let agents: String = String::from_utf8(agents.stdout).unwrap();
-    let mut agents: Vec<&str> = agents.trim().split(",").collect();
-    agents.push("human");
-    println!("Agents: {:?}", agents);
-
-    if front_end_connected.m_type == "Players" {
-        let message: Message = Message {
-            m_type: "Players".to_string(),
-            data: agents.iter().map(|x| x.to_string()).collect(),
-        };
-        server.send_reply(serde_json::to_string(&message).unwrap().as_str());
+    let mut handshakes = 0;
+    for agent in &selected_agents {
+        if agent != "human" {
+            handshakes += 1;
+        }
     }
-
-    let reply: Message = serde_json::from_str(server.receive_request().as_str()).unwrap();
-    println!("{} {} {}", reply.m_type, reply.data[0], reply.data[1]);
-    server.send_reply("Ready");
 
     let runtime = Runtime::new().unwrap();
     runtime.spawn(async move {
-        if reply.data[0] != "human" {
-            let _ = AsyncCommand::new("python3")
-                .current_dir("./../player/")
-                .stdout(std::process::Stdio::inherit())
-                .arg("main.py")
-                .arg("start-agent")
-                .arg(&(reply.data[0]))
-                .arg("RED")
-                .spawn()
-                .unwrap();
+        if selected_agents[0] != "human" {
+            subprocess_manager::spawn_agent(&selected_agents[0], "RED");
+            //message_handler.acknowledge_player_connection();
         }
-        if reply.data[1] != "human" {
-            let _ = AsyncCommand::new("python3")
-                .current_dir("./../player/")
-                .stdout(std::process::Stdio::inherit())
-                .arg("main.py")
-                .arg("start-agent")
-                .arg(&(reply.data[1]))
-                .arg("BLUE")
-                .spawn().unwrap();
+        if selected_agents[1] != "human" {
+            subprocess_manager::spawn_agent(&selected_agents[1], "BLUE");
+            //message_handler.acknowledge_player_connection();
         }
     });
 
-    // cheeky sleep to allow agents to start (REPLACE WITH PROPER SYNCHRONISATION)
-    thread::sleep(Duration::from_millis(150));
+    for _ in 0..handshakes {
+        message_handler.acknowledge_player_connection();
+    }
 
     loop {
-        // publish state
-        let state: GameMessage = GameMessage {
-            board: game.get_board().get_board().clone(),
-            current_player: game.get_current_player(),
-        };
-        let message: String = serde_json::to_string(&state).unwrap();
-        server.publish_data(message.as_str());
-        println!("Waiting for move...");
-
+        message_handler.send_game_state(
+            game.get_board().get_board().clone(),
+            game.get_current_player()
+        );
 
         // game moves
-        let move_result: MoveResult = serde_json::from_str(server.receive_request().as_str()).unwrap();
-        println!("Received move: row: {}, col: {}", move_result.data[0], move_result.data[1]);
-        let result = game.play(move_result.data[0], move_result.data[1]);
+        let requested_move = message_handler
+            .await_message(message_handler::MessageType::MoveRequest)
+            .into_move_request();
 
-        match result {
-            move_result::MoveResult::Valid => {
-                server.send_reply("Valid");
-            }
-            move_result::MoveResult::Invalid => {
-                server.send_reply("Invalid");
-            }
-            move_result::MoveResult::RedWin => {
-                server.send_reply("RedWin");
-                break;
-            }
-            move_result::MoveResult::BlueWin => {
-                server.send_reply("BlueWin");
-                break;
-            }
+        println!("Received move: row: {}, col: {}", requested_move[0], requested_move[1]);
+        let result = game.play(requested_move[0], requested_move[1]);
+
+        message_handler.send_message(
+            message_handler::MessageType::MoveReply,
+            message_handler::Payload::MoveReply(result),
+        );
+
+        if result == move_result::MoveResult::BlueWin || result == move_result::MoveResult::RedWin {
+            message_handler.send_game_state(
+                game.get_board().get_board().clone(),
+                game.get_current_player()
+            );
+            break;
         }
     }
 
-    let state: GameMessage = GameMessage {
-        board: game.get_board().get_board().clone(),
-        current_player: CellValue::Empty,
-    };
-    let message: String = serde_json::to_string(&state).unwrap();
-    server.publish_data(message.as_str());
-
-    thread::sleep(Duration::from_millis(100));
 
 }

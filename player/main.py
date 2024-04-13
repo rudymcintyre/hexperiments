@@ -78,7 +78,7 @@ async def _play(
             break
 
         (row, col) = agent.get_move()
-        await req_socket.send_json({'m_type': 'Move', 'data': [row, col]})
+        await req_socket.send_json({'message_type': 'MoveRequest', 'payload': [row, col]})
         #TODO make the backend send json not string
         result = await req_socket.recv()
         print(str(result))
@@ -126,6 +126,11 @@ def agents(quiet: bool) -> None:
 async def _async_start(req_socket, sub_socket, agent, colour: Literal['RED', 'BLUE']):
 
     print(f'Starting game {colour}')
+
+    # handshake
+    await req_socket.send_json({'message_type': 'Start', 'payload': colour})
+    await req_socket.recv()
+
     move_ready = asyncio.Event()
     game_over = asyncio.Event()
 

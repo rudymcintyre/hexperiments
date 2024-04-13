@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import HexClient from "../socket/HexClient";
+
 import React from "react";
 
 
@@ -26,7 +25,7 @@ export const SetupComponent: React.FC<SetupComponentProps> = (props: SetupCompon
             <div>
                 <form>
                     <h2>Player 1</h2>
-                        <select id="player1" onChange={(e) => setPlayer1(e.target.value)} >
+                        <select defaultValue={player1} onChange={(e) => setPlayer1(e.target.value)} >
                         {
                         players.map((player, i) => {
                             return <option key={i}>{player}</option>
@@ -34,7 +33,7 @@ export const SetupComponent: React.FC<SetupComponentProps> = (props: SetupCompon
                         }
                     </select>
                     <h2>Player 2</h2>
-                    <select id="player2" onChange={(e) => setPlayer2(e.target.value)} >
+                    <select defaultValue={player2} onChange={(e) => setPlayer2(e.target.value)} >
                         {players.map((player, i) => {
                             return <option key={i}>{player}</option>
                         })}

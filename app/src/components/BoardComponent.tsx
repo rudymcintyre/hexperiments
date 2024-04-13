@@ -1,7 +1,7 @@
 
 import { Stage, Layer, Text, RegularPolygon } from 'react-konva';
 import React from 'react';
-import { CellValue, GameState } from '../hextypes';
+import { AppState, CellValue, GameState } from '../hextypes';
 import HexClient from '../socket/HexClient';
 
 type FillMap = {
@@ -20,11 +20,12 @@ const cellWidth = cellRadius * 2;
 interface BoardComponentProps {
     game: GameState;
     socket: HexClient
+    stateSetter: (state: AppState) => void;
     width: number;
     height: number;
 };
 export const BoardComponent: React.FC<BoardComponentProps> = (props: BoardComponentProps) => {
-    const { game, socket, width, height } = props;
+    const { game, socket, stateSetter, width, height } = props;
 
     if (!game) {
         return <div>Loading...</div>;
@@ -45,7 +46,7 @@ export const BoardComponent: React.FC<BoardComponentProps> = (props: BoardCompon
                 stroke='black'
                 fill={fill}
                 onClick={() => {
-                    socket.send_request("Move", [row, col]);
+                    socket.send_request("MoveRequest", [row, col]);
                 }}
                 onMouseEnter={(e) => {
                     const cell = e.target;
@@ -68,12 +69,20 @@ export const BoardComponent: React.FC<BoardComponentProps> = (props: BoardCompon
         }
     }
 
+    const reset = () => {
+        socket.send_request("Reset", []);
+        stateSetter(AppState.READY);
+    }
+
     return (
-        <Stage width={width} height={height}>
-            <Layer>
-                {boardJSX}
-                <Text text={"hello"} x={10} y={300} fontSize={24} />
-            </Layer>
-        </Stage>
+        <>
+            <button onClick={reset}>Reset</button>
+            <Stage width={width} height={height}>
+                <Layer>
+                    {boardJSX}
+                    <Text text={"hello"} x={10} y={300} fontSize={24} />
+                </Layer>
+            </Stage>
+        </>
     );
 };

@@ -19,10 +19,10 @@ export enum ReplyType {
     RED_WIN = 'RedWin',
     VALID = 'Valid',
     INVALID = 'Invalid',
-    PLAYERS = 'Players',
+    PLAYERS = 'PlayerReply',
 }
 
 export interface Message {
-    m_type: ReplyType;
-    data: [] | null;
+    message_type: ReplyType;
+    payload: [] | null;
 }

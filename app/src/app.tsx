@@ -18,37 +18,35 @@ const App: React.FC = () => {
     }
 
     const req_callback = async (message: string) => {
-        let parsedMessage: Message = {m_type: null, data: null};
+        let parsedMessage: Message = {message_type: null, payload: null};
         try {
             parsedMessage = JSON.parse(message.toString()) as Message;
         } catch (e) {
             console.log(message.toString());
         }
 
-        if (parsedMessage.m_type === 'Players') {
-            console.log(parsedMessage.data);
-            setPlayerList(parsedMessage.data);
+        if (parsedMessage.message_type === 'PlayerReply') {
+            console.log(parsedMessage.payload);
+            setPlayerList(parsedMessage.payload);
         }
     }
 
     useEffect(() => {
         socket.connect(sub_callback, req_callback)
-        socket.send_request('Players', []);
+        socket.send_request('PlayerRequest', []);
     }, []);
 
     if (state == AppState.READY) {
-    return (
-        <div>
+        return (
             <SetupComponent players={playerList} startCallback={(player1: string, player2: string) => {
-                console.log(player1, player2);
-                socket.send_request('Start', [player1, player2]);
+                socket.send_request('PlayerReply', [player1, player2]);
                 setState(AppState.PLAYING)
-            }}/>
-        </div>
-    );
+            }}
+            />
+        );
     } else if (state == AppState.PLAYING) {
         return (
-            <BoardComponent game={game} socket={socket} width={window.innerWidth} height={window.innerHeight} />
+            <BoardComponent game={game} socket={socket} stateSetter={setState} width={window.innerWidth} height={window.innerHeight} />
         );
     }
 };
