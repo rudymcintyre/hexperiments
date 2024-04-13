@@ -76,7 +76,7 @@ fn main() {
         if result == move_result::MoveResult::BlueWin || result == move_result::MoveResult::RedWin {
             message_handler.send_game_state(
                 game.get_board().get_board().clone(),
-                game.get_current_player()
+                game::cell::CellValue::Empty
             );
             break;
         }

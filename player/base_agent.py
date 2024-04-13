@@ -20,16 +20,17 @@ class BaseAgent():
         """
         visited = [[False for _ in range(self.board_size)] for _ in range(self.board_size)]
 
-        if player == 'Red':
-            for i in range(self.board_size):
-                if current_board[i][0] == 'Red' and not visited[i][0]:
-                    if self.dfs(0, i, current_board, player, visited):
-                        return True
-        else:
-            for i in range(self.board_size):
-                if current_board[0][i] == 'Blue' and not visited[0][i]:
-                    if self.dfs(i, 0, current_board, player, visited):
-                        return True
+        for i in range(self.board_size):
+            if player == 'Red':
+                row = i
+                col = 0
+            else:
+                row = 0
+                col = i
+
+            if current_board[row][col] == player and not visited[row][col]:
+                if self.dfs(row, col, current_board, player, visited):
+                    return True
 
         return False
     
@@ -48,7 +49,7 @@ class BaseAgent():
                 if (current_board[nr][nc] != colour):
                     continue
 
-                if colour == 'Red' and c == self.board_size - 1 or colour == 'Blue' and r == self.board_size - 1:
+                if colour == 'Red' and nc == self.board_size - 1 or colour == 'Blue' and nr == self.board_size - 1:
                     return True
 
                 if not visited[nr][nc]:

@@ -11,14 +11,14 @@ from base_agent import BaseAgent
 
 class Agent(BaseAgent):
 
-    SIMULATIONS = 1000
+    SIMULATIONS = 200
 
     def __init__(self, colour: str):
         self.init_board(colour)
 
     def has_moves_left(self) -> bool:
         """
-        Check if the player has any moves left
+        Check if the board has any moves left
         """
         for i in range(self.board_size):
             for j in range(self.board_size):

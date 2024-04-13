@@ -89,10 +89,10 @@ async def _sub_listen(sub_socket: zmq.Socket, callback: callable, move_ready: as
     while True:
         message = await sub_socket.recv_json()
         callback(message)
-
+        
         if message['current_player'] == 'Empty':
-            move_ready.set()
             game_over.set()
+            move_ready.set()
             break
 
         if message['current_player'].lower() == colour.lower():
