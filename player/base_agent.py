@@ -10,9 +10,10 @@ class BaseAgent():
     colour = None
     board_size = 6
 
-    def init_board(self, colour: str):
+    def __init__(self, colour: str, board_size: int):
         self.board_state = [['Empty' for _ in range(self.board_size)] for _ in range(self.board_size)]
         self.colour = colour
+        self.board_size = board_size
 
     def win_condition(self, current_board, player) -> bool:
         """

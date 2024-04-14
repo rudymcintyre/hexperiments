@@ -7,14 +7,12 @@ from typing import Tuple
 import random
 from copy import deepcopy
 
-from base_agent import BaseAgent
+from player.base_agent import BaseAgent
+
 
 class Agent(BaseAgent):
 
     SIMULATIONS = 200
-
-    def __init__(self, colour: str):
-        self.init_board(colour)
 
     def has_moves_left(self) -> bool:
         """
@@ -22,11 +20,11 @@ class Agent(BaseAgent):
         """
         for i in range(self.board_size):
             for j in range(self.board_size):
-                if self.board_state[i][j] == 'Empty':
+                if self.board_state[i][j] == "Empty":
                     return True
 
         return False
-    
+
     def get_move_options(self, current_board) -> list[tuple[int, int]]:
         """
         Get all possible moves the player can make
@@ -34,11 +32,10 @@ class Agent(BaseAgent):
         moves = []
         for row in range(self.board_size):
             for col in range(self.board_size):
-                if current_board[row][col] == 'Empty':
+                if current_board[row][col] == "Empty":
                     moves.append((row, col))
 
         return moves
-    
 
     def get_move(self) -> Tuple[int, int]:
         # move: score
@@ -51,7 +48,7 @@ class Agent(BaseAgent):
             simulation_moves = []
             next_moves = self.get_move_options(current_board)
 
-            score = self.board_size ** 2
+            score = self.board_size**2
 
             while next_moves:
                 # choose a random move, make it and add record it
@@ -78,7 +75,7 @@ class Agent(BaseAgent):
                 evaluations[first_move_key] += score
             else:
                 evaluations[first_move_key] = score
-        
+
         best_move = max(evaluations, key=evaluations.get)
 
         return ast.literal_eval(best_move)
