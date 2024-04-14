@@ -8,7 +8,7 @@ class BaseAgent():
     """
     board_state = None
     colour = None
-    board_size = 11
+    board_size = 7
 
     def init_board(self, colour: str):
         self.board_state = [['Empty' for _ in range(self.board_size)] for _ in range(self.board_size)]
@@ -39,7 +39,6 @@ class BaseAgent():
         Depth first search to find if the player has won
         """
         visited[row][col] = True
-
         stack = [(row, col)]
 
         while stack:
@@ -49,7 +48,7 @@ class BaseAgent():
                 if (current_board[nr][nc] != colour):
                     continue
 
-                if colour == 'Red' and nc == self.board_size - 1 or colour == 'Blue' and nr == self.board_size - 1:
+                if (colour == 'Blue' and nr == self.board_size - 1) or (colour == 'Red' and nc == self.board_size - 1):
                     return True
 
                 if not visited[nr][nc]:

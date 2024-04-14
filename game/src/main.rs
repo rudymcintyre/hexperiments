@@ -13,7 +13,7 @@ fn main() {
 
     let message_handler = message_handler::MessageHandler::new(&server);
 
-    let mut game = Game::new(11);
+    let mut game = Game::new(7);
 
     // get agents and send to frontend
     let agents = subprocess_manager::get_agents();
@@ -41,11 +41,11 @@ fn main() {
     let runtime = Runtime::new().unwrap();
     runtime.spawn(async move {
         if selected_agents[0] != "human" {
-            subprocess_manager::spawn_agent(&selected_agents[0], "RED");
+            subprocess_manager::spawn_agent(&selected_agents[0], "Red");
             //message_handler.acknowledge_player_connection();
         }
         if selected_agents[1] != "human" {
-            subprocess_manager::spawn_agent(&selected_agents[1], "BLUE");
+            subprocess_manager::spawn_agent(&selected_agents[1], "Blue");
             //message_handler.acknowledge_player_connection();
         }
     });

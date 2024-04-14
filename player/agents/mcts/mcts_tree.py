@@ -1,23 +1,42 @@
 import math
 
-class MCTSTreeNode():
-    EXPLORATION_PARAM = math.sqrt(2)
+EXPLORATION_PARAM = 1
 
-    def __init__(self, state, player, parent, action, actions):
-        self.state = state
+class MCTSTreeNode():
+    
+
+    def __init__(self, player, parent, action):
         self.player = player
 
         self.parent = parent
         self.children = []
 
-        self.simulations = 0
-        self.wins = 0
+        self.visits = 0
+        self.value  = 0
 
         self.action = action
-        self.untried_actions = actions
 
-    def uct_score(self):
-        if self.simulations == 0 or self.parent and self.parent.simulations == 0:
-            return 0
+    def uct_score(self, expl_param = EXPLORATION_PARAM):
+        if self.visits == 0:
+            return 0 if expl_param == 0 else float('inf')
+        
+        return self.value / self.visits + expl_param * math.sqrt(math.log(self.parent.visits) / self.visits)
+    
+    def has_children(self) -> bool:
+        """
+        Return true if the node has children
+        """
 
-        return self.wins / self.simulations + self.EXPLORATION_PARAM * math.sqrt(math.log(self.parent.simulations) / self.simulations)
+        return len(self.children) > 0
+
+    def __repr__(self) -> str:
+        parts = {
+            'Action': self.action,
+            'Visits': self.visits,
+            'Value': self.value,
+            'Colour': self.player,
+            'UCT': self.uct_score(),
+        }
+        return '\n'.join(
+            [f'{k}:\t{v}' for (k,v) in parts.items()]
+        )
