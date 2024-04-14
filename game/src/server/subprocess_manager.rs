@@ -21,7 +21,7 @@ pub fn get_agents() -> Vec<String>{
 }
 
 /// Function to asynchronously spawn an agent process
-pub fn spawn_agent(agent: &str, colour: &str) {
+pub fn spawn_agent(agent: &str, colour: &str, board_size: usize) {
     let _ = AsyncCommand::new("python3")
         .current_dir("./../player/")
         .stdout(std::process::Stdio::inherit())
@@ -29,6 +29,7 @@ pub fn spawn_agent(agent: &str, colour: &str) {
         .arg("start-agent")
         .arg(agent)
         .arg(colour)
+        .arg(board_size.to_string())
         .spawn()
         .unwrap();
 }

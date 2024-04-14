@@ -12,7 +12,8 @@ from .mcts_tree import MCTSTreeNode
 
 class Agent(BaseAgent):
 
-    SIMULATIONS = 20
+    SIMULATIONS = 8000
+    move_count = 0
 
     def get_move_options(self, current_board) -> list[tuple[int, int]]:
         """
@@ -30,12 +31,14 @@ class Agent(BaseAgent):
 
         current_node = root_node
 
+        depth = self.move_count
         while current_node.has_children():
             max_uct = max(
                 current_node.children, key=lambda x: x.uct_score()
             ).uct_score()
             tied_nodes = [n for n in current_node.children if n.uct_score() == max_uct]
             current_node = random.choice(tied_nodes)
+            depth += 1
             state[current_node.action[0]][current_node.action[1]] = current_node.player
 
             if current_node.visits == 0:
@@ -62,18 +65,23 @@ class Agent(BaseAgent):
 
     def simulate(self, state, colour):
 
-        moves = self.get_move_options(state)
+        available_moves = self.get_move_options(state)
+        move_count = 0
 
         while not self.win_condition(state, colour):
+            move_count += 1
             colour = self.get_opponent(colour)
-            move = moves.pop(len(moves) - 1)
+            move = available_moves.pop(len(available_moves) - 1)
             state[move[0]][move[1]] = colour
 
-        return colour
+        return colour, move_count
 
-    def backpropagate(self, node, colour, winner):
+    def backpropagate(self, node, colour, winner, move_count):
 
         reward = 1 if colour == winner else -1
+
+        if move_count < 10:
+            reward *= 10
 
         while node:
             node.visits += 1
@@ -90,6 +98,16 @@ class Agent(BaseAgent):
     def get_move(self) -> Tuple[int, int]:
         """ """
 
+        if self.move_count == 0:
+            self.move_count += 1
+            centre = self.board_size // 2
+            neighbours = self.get_neighbours(centre, centre)
+            neighbours.append((centre, centre))
+            neighbours = [
+                n for n in neighbours if self.board_state[n[0]][n[1]] == "Empty"
+            ]
+            return random.choice(neighbours)
+
         # root node: move just played by opponent
         root = MCTSTreeNode(
             self.get_opponent(self.colour),
@@ -103,11 +121,12 @@ class Agent(BaseAgent):
 
             # SIMULATION
             player = node.player
-            winner = self.simulate(state, player)
+            winner, move_count = self.simulate(state, player)
 
             # BACKPROPAGATION
-            self.backpropagate(node, player, winner)
+            self.backpropagate(node, player, winner, move_count)
 
         max_visits = max(root.children, key=lambda x: x.visits).visits
         tied_nodes = [n for n in root.children if n.visits == max_visits]
+        self.move_count += 1
         return random.choice(tied_nodes).action

@@ -12,10 +12,7 @@ mod server;
 fn main() {
     let server = server::socket_manager::SocketManager::new();
     server.bind(None, None);
-
     let message_handler = message_handler::MessageHandler::new(&server);
-
-    let mut game = Game::new(6);
 
     // get agents and send to frontend
     let agents = subprocess_manager::get_agents();
@@ -26,6 +23,10 @@ fn main() {
         message_handler::Payload::PlayerReply(agents.iter().map(|x| x.to_string()).collect()),
     );
     let runtime = Runtime::new().unwrap();
+
+    let board_size = 5;
+    let mut game = Game::new(board_size);
+
     loop {
         let selected_agents: Vec<String> = message_handler
             .await_message(message_handler::MessageType::PlayerReply)
@@ -44,10 +45,10 @@ fn main() {
         
         runtime.spawn(async move {
             if selected_agents[0] != "human" {
-                subprocess_manager::spawn_agent(&selected_agents[0], "Red");
+                subprocess_manager::spawn_agent(&selected_agents[0], "Red", board_size);
             }
             if selected_agents[1] != "human" {
-                subprocess_manager::spawn_agent(&selected_agents[1], "Blue");
+                subprocess_manager::spawn_agent(&selected_agents[1], "Blue", board_size);
             }
         });
 

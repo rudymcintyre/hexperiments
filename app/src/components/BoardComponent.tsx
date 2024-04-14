@@ -1,5 +1,5 @@
 
-import { Stage, Layer, Text, RegularPolygon } from 'react-konva';
+import { Stage, Layer, Text, RegularPolygon, Line } from 'react-konva';
 import React from 'react';
 import { AppState, CellValue, GameState } from '../hextypes';
 import HexClient from '../socket/HexClient';
@@ -78,6 +78,25 @@ export const BoardComponent: React.FC<BoardComponentProps> = (props: BoardCompon
             <button onClick={reset}>Reset</button>
             <Stage width={width} height={height}>
                 <Layer>
+                    <Line points={[0, 0, cellWidth * game.board.length, 0]} stroke='blue' strokeWidth={10} />
+                    <Line points={[
+                        cellRadius * (game.board.length - 1),
+                        1.75 * drawOffset + cellRadius * 1.75 * (game.board.length - 1) + 5,
+                        cellRadius * (game.board.length - 1) + cellWidth * game.board.length,
+                        1.75 * drawOffset + cellRadius * 1.75 * (game.board.length - 1) + 5]
+                    } stroke='blue' strokeWidth={5} />
+                    <Line points={[
+                        0,
+                        0,
+                        cellRadius * (game.board.length - 1),
+                        1.75 * drawOffset + cellRadius * 1.75 * (game.board.length - 1) + 5,
+                    ]} stroke='red' strokeWidth={5} />
+                    <Line points={[
+                        cellWidth * game.board.length,
+                        0, 
+                        cellRadius * (game.board.length - 1) + cellWidth * game.board.length,
+                        1.75 * drawOffset + cellRadius * 1.75 * (game.board.length - 1) + 5
+                    ]} stroke='red' strokeWidth={5} />
                     {boardJSX}
                     <Text text={game.current_player != 'Empty' ? game.current_player : 'Game Over'} x={10} y={300} fontSize={24} />
                 </Layer>

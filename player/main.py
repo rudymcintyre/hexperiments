@@ -15,11 +15,12 @@ import zmq
 import zmq.asyncio
 import click
 
-from player.base_agent import BaseAgent
-
-# add the parent directory to the path
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
+
+# linter: disable=wrong-import-position
+from player.base_agent import BaseAgent
+
 
 DEFAULT_PORT = 5555
 LOCALHOST = "127.0.0.1"
