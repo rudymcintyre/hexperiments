@@ -118,7 +118,7 @@ impl Game {
         false
     }
 
-    fn reset(&mut self) -> () {
+    pub fn reset(&mut self) -> () {
         self.board.reset();
         self.current_player = Game::INITIAL_PLAYER;
 

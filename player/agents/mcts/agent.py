@@ -11,7 +11,7 @@ from .mcts_tree import MCTSTreeNode
 
 class Agent(BaseAgent):
 
-    SIMULATIONS = 5000
+    SIMULATIONS = 10000
 
     def __init__(self, colour: str):
         self.init_board(colour)
@@ -34,14 +34,12 @@ class Agent(BaseAgent):
 
         current_node = root_node
 
-        depth = 0
         while current_node.has_children():
             max_uct = max(current_node.children, key=lambda x: x.uct_score()).uct_score()
             tied_nodes = [n for n in current_node.children if n.uct_score() == max_uct]
             current_node = random.choice(tied_nodes)
             state[current_node.action[0]][current_node.action[1]] = current_node.player
 
-            depth += 1
             if current_node.visits == 0:
                 return (current_node, state)
             
@@ -56,7 +54,7 @@ class Agent(BaseAgent):
         
         if self.win_condition(state, parent_node.player):
             return False
-        print(parent_node)
+
         children = []
         new_colour = self.get_opponent(parent_node.player)
         for move in self.get_move_options(state):
@@ -99,10 +97,7 @@ class Agent(BaseAgent):
         
         """
 
-        # root node is that move just played by the oppoenent, therefore child
-        # nodes moves of our colour from that state
-
-        print('\n')
+        # root node: move just played by opponent
         root = MCTSTreeNode(
             self.get_opponent(self.colour),
             None,
@@ -110,12 +105,14 @@ class Agent(BaseAgent):
         )
 
         for _ in range(self.SIMULATIONS):
-            # SELECTION node with highest UCT score (including current)
+            # SELECTION / EXPANSION
             node, state = self.select_node(root, deepcopy(self.board_state))
 
-            # EXPANSION choose random move and add that child to the tree
+            # SIMULATION
             player = node.player
             winner = self.simulate(state, player)
+
+            # BACKPROPAGATION
             self.backpropagate(node, player, winner)
 
 

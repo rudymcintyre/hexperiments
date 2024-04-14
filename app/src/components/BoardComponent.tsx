@@ -70,7 +70,6 @@ export const BoardComponent: React.FC<BoardComponentProps> = (props: BoardCompon
     }
 
     const reset = () => {
-        socket.send_request("Reset", []);
         stateSetter(AppState.READY);
     }
 
@@ -80,7 +79,7 @@ export const BoardComponent: React.FC<BoardComponentProps> = (props: BoardCompon
             <Stage width={width} height={height}>
                 <Layer>
                     {boardJSX}
-                    <Text text={"hello"} x={10} y={300} fontSize={24} />
+                    <Text text={game.current_player != 'Empty' ? game.current_player : 'Game Over'} x={10} y={300} fontSize={24} />
                 </Layer>
             </Stage>
         </>

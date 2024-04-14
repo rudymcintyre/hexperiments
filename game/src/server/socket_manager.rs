@@ -6,7 +6,7 @@ pub struct SocketManager {
 }
 
 impl SocketManager {
-    const DEFAULT_HOST: &str = "127.0.0.1";
+    const DEFAULT_HOST: &'static str = "127.0.0.1";
     const DEFAULT_PORT: i32 = 5555;
 
     pub fn new() -> SocketManager {

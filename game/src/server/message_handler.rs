@@ -70,7 +70,6 @@ impl<'a> MessageHandler<'a> {
 
     pub fn await_message(&self, message_type: MessageType) -> Payload {
         let message: String = self.socket_manager.receive_request();
-        println!("{}", message.as_str());
         let deserialised_message: Message = serde_json::from_str(message.as_str()).unwrap();
 
         if deserialised_message.message_type != message_type {
@@ -87,8 +86,7 @@ impl<'a> MessageHandler<'a> {
     /// Sends a message to the REP socket after serialising it
     pub fn send_message(&self, message_type: MessageType, payload: Payload) {
         let message = Message { message_type, payload };
-        let serialised = serde_json::to_string(&message).unwrap();
-        println!("{}", serialised.as_str());
+        let _serialised = serde_json::to_string(&message).unwrap();
         self.socket_manager.send_reply(
             serde_json::to_string(&message).unwrap().as_str()
         );

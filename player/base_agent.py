@@ -8,7 +8,7 @@ class BaseAgent():
     """
     board_state = None
     colour = None
-    board_size = 7
+    board_size = 6
 
     def init_board(self, colour: str):
         self.board_state = [['Empty' for _ in range(self.board_size)] for _ in range(self.board_size)]
