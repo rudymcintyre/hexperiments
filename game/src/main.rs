@@ -1,3 +1,5 @@
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::{thread, time};
 
 use crate::game::{game::Game, move_result};
@@ -35,9 +37,11 @@ fn main() {
     
     let mut game = Game::new(board_size);
 
+    // game stats
     let mut blue_wins = 0;
     let mut red_wins = 0;
     let mut game_durations: Vec<f32> = Vec::new();
+    let mut total_game_moves: Vec<i32> = Vec::new();
     let mut game_count = 0;
 
     let mut start_time = time::Instant::now();
@@ -74,9 +78,13 @@ fn main() {
             }
         });
 
-        for _ in 0..handshakes {
-            message_handler.acknowledge_player_connection();
-        }
+        // for _ in 0..handshakes {
+        //     message_handler.acknowledge_player_connection();
+        // }
+
+        thread::sleep(time::Duration::from_millis(1000));
+
+        let mut moves = 0;
 
         loop {
             message_handler.send_game_state(
@@ -90,6 +98,7 @@ fn main() {
                 .into_move_request();
 
             println!("Received move: row: {}, col: {}", requested_move[0], requested_move[1]);
+            moves += 1;
             let result = game.play(requested_move[0], requested_move[1]);
 
             message_handler.send_message(
@@ -105,7 +114,7 @@ fn main() {
                 break;
             }
         }
-        game.reset();
+        
 
         if game.get_current_player() == game::cell::CellValue::Red {
             blue_wins += 1;
@@ -113,10 +122,12 @@ fn main() {
             red_wins += 1;
         }
 
-        let duration = start_time.elapsed().as_secs_f32();
+        game.reset();
+
+        let duration = start_time.elapsed().as_secs_f32() - 1.0;
         game_durations.push(duration);
-        
-        thread::sleep(time::Duration::from_millis(100));
+
+        total_game_moves.push(moves);
 
         start_time = time::Instant::now();
         game_count += 1;
@@ -131,4 +142,25 @@ fn main() {
 
     println!("Red wins: {}, Blue wins: {}", red_wins, blue_wins);
     println!("Average game duration: {}", game_durations.iter().sum::<f32>() / game_durations.len() as f32);
+    println!("Average game moves: {}", total_game_moves.iter().sum::<i32>() as f32 / total_game_moves.len() as f32);
+
+    // open existing csv file and write game stats
+    
+    let mut file = OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open("game_stats.csv")
+        .unwrap();
+
+    let record = format!("{}|{}|{}|[{}]|[{}]\n", 
+        board_size,
+        red_wins,
+        blue_wins,
+        game_durations.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(","),
+        total_game_moves.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",")
+    );
+
+    file.write_all(record.as_bytes()).unwrap();
+    file.flush().unwrap();
+
 }
