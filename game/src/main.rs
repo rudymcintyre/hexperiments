@@ -78,11 +78,9 @@ fn main() {
             }
         });
 
-        // for _ in 0..handshakes {
-        //     message_handler.acknowledge_player_connection();
-        // }
-
-        thread::sleep(time::Duration::from_millis(1000));
+        for _ in 0..handshakes {
+            message_handler.acknowledge_player_connection();
+        }
 
         let mut moves = 0;
 
@@ -149,7 +147,7 @@ fn main() {
     let mut file = OpenOptions::new()
         .write(true)
         .append(true)
-        .open("game_stats.csv")
+        .open("game_stats_iterations.csv")
         .unwrap();
 
     let record = format!("{}|{}|{}|[{}]|[{}]\n", 

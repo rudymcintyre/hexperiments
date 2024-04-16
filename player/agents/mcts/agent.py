@@ -12,7 +12,7 @@ from .mcts_tree import MCTSTreeNode
 
 class Agent(BaseAgent):
 
-    SIMULATIONS = 5000
+    SIMULATIONS = 200
     move_count = 0
 
     def get_move_options(self, current_board) -> list[tuple[int, int]]:
