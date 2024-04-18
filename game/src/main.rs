@@ -19,7 +19,7 @@ fn main() {
     let message_handler = message_handler::MessageHandler::new(&server);
 
     let args: Vec<String> = env::args().collect();
-    let mut board_size = 7;
+    let mut board_size = 9;
     if args.len() == 1 {
         println!("No agents specified, you must be using the GUI. Waitng for player request...");
         // get agents and send to frontend
@@ -104,6 +104,7 @@ fn main() {
                 message_handler::Payload::MoveReply(result),
             );
 
+
             if result == move_result::MoveResult::BlueWin || result == move_result::MoveResult::RedWin {
                 message_handler.send_game_state(
                     game.get_board().get_board().clone(),
@@ -113,6 +114,7 @@ fn main() {
             }
         }
         
+        thread::sleep(time::Duration::from_secs(1));
 
         if game.get_current_player() == game::cell::CellValue::Red {
             blue_wins += 1;

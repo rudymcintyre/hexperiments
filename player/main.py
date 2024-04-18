@@ -173,8 +173,8 @@ async def _async_start(req_socket, sub_socket, agent, colour: Literal["Red", "Bl
     """
 
     # # handshake to prevent backend from publishing too soon
-    # await req_socket.send_json({"message_type": "Start", "payload": colour})
-    # await req_socket.recv()
+    await req_socket.send_json({"message_type": "Start", "payload": colour})
+    await req_socket.recv()
 
     move_ready = asyncio.Event()
     game_over = asyncio.Event()

@@ -75,7 +75,6 @@ export const BoardComponent: React.FC<BoardComponentProps> = (props: BoardCompon
 
     return (
         <>
-            <button onClick={reset}>Reset</button>
             <Stage width={width} height={height}>
                 <Layer>
                     <Line points={[0, 0, cellWidth * game.board.length, 0]} stroke='blue' strokeWidth={10} />
@@ -99,6 +98,7 @@ export const BoardComponent: React.FC<BoardComponentProps> = (props: BoardCompon
                     ]} stroke='red' strokeWidth={5} />
                     {boardJSX}
                     <Text text={game.current_player != 'Empty' ? game.current_player : 'Game Over'} x={10} y={300} fontSize={24} />
+                    <RegularPolygon text='Reset' radius={cellRadius} sides={6} x={50} y={250} stroke='black' fill='green' onClick={reset} />
                 </Layer>
             </Stage>
         </>

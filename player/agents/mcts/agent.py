@@ -12,7 +12,7 @@ from .mcts_tree import MCTSTreeNode
 
 class Agent(BaseAgent):
 
-    SIMULATIONS = 200
+    SIMULATIONS = 5000
     move_count = 0
 
     def get_move_options(self, current_board) -> list[tuple[int, int]]:
@@ -28,17 +28,19 @@ class Agent(BaseAgent):
         return moves
 
     def select_node(self, root_node, state):
+        """Selection policy for MCTS
 
+        Select successive child nodes according to UCT until a leaf node is reached
+        """
         current_node = root_node
 
-        depth = self.move_count
         while current_node.has_children():
             max_uct = max(
                 current_node.children, key=lambda x: x.uct_score()
             ).uct_score()
             tied_nodes = [n for n in current_node.children if n.uct_score() == max_uct]
+
             current_node = random.choice(tied_nodes)
-            depth += 1
             state[current_node.action[0]][current_node.action[1]] = current_node.player
 
             if current_node.visits == 0:
